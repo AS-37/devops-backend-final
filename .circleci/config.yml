@@ -4,6 +4,7 @@ workflows:
     jobs:
       - build
       - test
+      - lint
 version: 2
 jobs:
   build:
@@ -29,4 +30,18 @@ jobs:
       - checkout # check out the code in the project directory
       - restore_cache:
           key: npm-v1-dependencies-{{ checksum "yarn.lock" }}
-  
+  lint:
+    docker:
+      - image: cimg/node:14.15.0 # the primary container, where your job's commands are run
+        auth:
+          username: xaela37
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    steps:
+      - checkout # check out the code in the project directory
+      - restore_cache:
+          key: npm-v1-dependencies-{{ checksum "yarn.lock" }}  
+      - run:
+          name: "step lint"
+          command: |
+            yarn lint
+            yarn format:check
