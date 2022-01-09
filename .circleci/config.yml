@@ -1,0 +1,26 @@
+workflows:
+  my_workflow:
+    jobs:
+      - build
+      - test
+version: 2
+jobs:
+  build:
+    steps:
+      - checkout # check out the code in the project directory
+      - run: yarn install
+      - save_cache:
+          key: npm-v1-dependencies-{{ checksum "yarn.lock" }}
+          paths:
+          - node_modules #ça marche jusqu'ici pour l'instant
+  test:
+    docker:
+      - image: cimg/node:14.15.0 # the primary container, where your job's commands are run
+        auth:
+          username: xaela37
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    steps:
+      - checkout # check out the code in the project directory
+      - restore_cache:
+          key: npm-v1-dependencies-{{ checksum "yarn.lock" }}
+  
