@@ -4,10 +4,10 @@ workflows:
     jobs:
       - build
       - test
-      - lint
-           requires:
-             - build
-             - test
+      - lint:
+        requires:
+        - build
+        - test
 version: 2
 jobs:
   build:
