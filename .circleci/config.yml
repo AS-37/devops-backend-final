@@ -63,7 +63,8 @@ jobs:
           name: "step lint"
   test_unit: 
     docker: 
-      - auth: 
+      - 
+        auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: "cimg/node:14.15.0"
