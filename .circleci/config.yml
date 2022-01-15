@@ -3,11 +3,15 @@ workflows:
   my_workflow:
     jobs:
       - build
-      - test
+      - test_unit:
+         requires:
+           - build
+      - test_e2e:
+           requires:
+            - build
       - lint:
           requires:
             - build
-            - test
 version: 2
 jobs:
   build:
@@ -22,17 +26,53 @@ jobs:
       - save_cache:
           key: npm-v1-dependencies-{{ checksum "yarn.lock" }}
           paths:
-          - node_modules #ça marche jusqu'ici pour l'instant
-  test:
+          - node_modules #?a marche jusqu'ici pour l'instant
+  test_unit:
     docker:
-      - image: cimg/node:14.15.0 # the primary container, where your job's commands are run
+      - image: cimg/node:14.15.0
         auth:
           username: xaela37
-          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+          password: $DOCKERHUB_PASSWORD
+      - image: circleci/postgres:9.6.2-alpine
+        auth:
+          username: xaela37
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          POSTGRES_USER: pguser
+          POSTGRES_DB: pgdb
+          POSTGRES_PASSWORD: pass
     steps:
       - checkout # check out the code in the project directory
       - restore_cache:
           key: npm-v1-dependencies-{{ checksum "yarn.lock" }}
+      - run:
+          command: yarn test
+          environment:
+            DATABASE_URL: postgres://psqluer:psqlpassword@localhost:5432/psqluer
+   end_to_end:
+    docker:
+      - image: cimg/node:14.15.0
+        auth:
+          username: xaela37
+          password: $DOCKERHUB_PASSWORD
+      - image: circleci/postgres:9.6.2-alpine
+        auth:
+          username: xaela37
+          password: $DOCKERHUB_PASSWORD
+        environment:
+          POSTGRES_USER: pguser
+          POSTGRES_DB: pgdb
+          POSTGRES_PASSWORD: pass
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - npm-v1-dependencies-{{ checksum "yarn.lock" }}
+      - run:
+          name: "yarn test"
+          command: yarn test:e2e
+          environment:
+            DATABASE_URL: postgres://pguser:pass@localhost:5432/pgdb
   lint:
     docker:
       - image: cimg/node:14.15.0 # the primary container, where your job's commands are run
