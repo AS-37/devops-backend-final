@@ -94,20 +94,16 @@ workflows:
   my_workflow: 
     jobs: 
       - build
-      - 
-        test_unit: 
+      - test_unit: 
           requires: 
             - build
-      - 
-        end_to_end: 
+      - end_to_end: 
           requires: 
             - build
-      - 
-        lint: 
+      - lint: 
           requires: 
             - build
-      -
-        heroku_deploy:
+      - heroku_deploy:
             requires:
               - build
               - test_unit
