@@ -13,6 +13,19 @@ jobs:
           key: "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
           paths: 
             - node_modules
+  test_unit:
+    docker: 
+      - auth: 
+          password: $DOCKERHUB_PASSWORD
+          username: xaela37
+        image: "cimg/node:14.15.0"
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run:
+          command: yarn test
+          
   end_to_end: 
     docker: 
       - auth: 
@@ -52,19 +65,7 @@ jobs:
               yarn lint
               yarn format:check
           name: "step lint"
-  test_unit:
-    docker: 
-      - auth: 
-          password: $DOCKERHUB_PASSWORD
-          username: xaela37
-        image: "cimg/node:14.15.0"
-    steps:
-      - checkout
-      - restore_cache:
-          key: dependencies-{{ checksum "package.json" }}-v1
-      - run:
-          command: yarn test
-          
+  
   heroku_deploy: 
     docker: 
       - image: buildpack-deps:trusty
