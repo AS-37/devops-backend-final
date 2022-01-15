@@ -50,7 +50,7 @@ jobs:
       - auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
-        image: "cimg/node:14.15.0"
+        image: "cimg/node:lts-fermium"
     steps: 
       - checkout
       - restore_cache: 
