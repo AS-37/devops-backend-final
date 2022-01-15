@@ -97,8 +97,6 @@ workflows:
     jobs: 
       - build
       - test_unit: 
-          requires: 
-            - build
       - end_to_end: 
           requires: 
             - build
