@@ -1,6 +1,7 @@
-jobs: 
+version: 2
+jobs:
   build: &shared-config
-    docker: 
+    docker:
       - image: circleci/node:lts-fermium
     working_directory: ~/repo
     steps:
@@ -14,8 +15,32 @@ jobs:
           paths:
             - node_modules
           key: dependencies-{{ checksum "package.json" }}-v1
-          
-  test_unit:
+  lint:
+    <<: *shared-config
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run: yarn lint
+      - run: yarn format:check
+  server-doc-build:
+    <<: *shared-config
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run: yarn doc:build
+      - run:
+          name: Copy deployment artifacts to workspace
+          command: |
+            cp docs/ /tmp/server-doc -r
+      - store_artifacts:
+          path: /tmp/server-doc
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - server-doc
+  back-test-unit:
     <<: *shared-config
     steps:
       - checkout
@@ -24,8 +49,9 @@ jobs:
       - run:
           command: yarn test
           environment:
-            DATABASE_URL: postgres://psqluer:psqlpassword@localhost:5432/psqluer
-  end_to_end: 
+            DATABASE_URL: postgres://$PG_USER:$PG_PWD@localhost:5432/$PG_DB
+
+  back-test-e2e:
     docker:
       - image: circleci/node:lts-fermium
       - image: circleci/postgres:9.6.5
@@ -42,48 +68,80 @@ jobs:
           command: yarn test:e2e
           environment:
             DATABASE_URL: postgres://$PG_USER:$PG_PASS@localhost:5432/$PG_DB
-  lint:
-    <<: *shared-config
+  docker-build-and-push:
+    working_directory: /dockerapp
+    docker:
+      - image: docker:17.05.0-ce-git
     steps:
       - checkout
-      - restore_cache:
-          key: dependencies-{{ checksum "package.json" }}-v1
-      - run: yarn lint
-      - run: yarn format:check
-  
-  heroku_deploy: 
-    docker: 
+      - setup_remote_docker:
+          version: 19.03.13
+      - run:
+          name: Build application Docker image
+          command: |
+            docker build -t app . 
+      - deploy:
+          name: Publish application to docker hub
+          command: |
+            docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+            docker tag app $DOCKERHUB_USERNAME/$DOCKERHUB_APP_NAME:$CIRCLE_BUILD_NUM
+            docker tag app $DOCKERHUB_USERNAME/$DOCKERHUB_APP_NAME:latest
+            docker push $DOCKERHUB_USERNAME/$DOCKERHUB_APP_NAME:$CIRCLE_BUILD_NUM
+            docker push $DOCKERHUB_USERNAME/$DOCKERHUB_APP_NAME:latest
+  back-deploy-heroku:
+    docker:
       - image: buildpack-deps:trusty
     steps:
       - checkout
       - run:
           name: Heroku Deploy
-          command: git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD:main 
+          command: git push https://heroku:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git HEAD:main
       - run:
           name: Smoke Test
           command: |
             HTTPCODE=`curl -s -o /dev/null -w "%{http_code}" https://$HEROKU_APP_NAME.herokuapp.com/`
-            if [ "$HTTPCODE" -ne 200 ];then
+              if [ "$HTTPCODE" -ne 200 ];then
                 echo "heroku app not responding, failing deploy"
                 exit 1
-            fi
-
-version: 2
-workflows: 
-  my_workflow: 
-    jobs: 
-      - build
-      - test_unit
-      - end_to_end: 
-          requires: 
-            - build
-      - lint: 
-          requires: 
-            - build
-      - heroku_deploy: 
-          requires: 
-            - build
-            - test_unit
-            - end_to_end
-            - lint
+              fi
+workflows:
   version: 2
+  build-test-and-lint:
+    jobs:
+      - build
+      - back-test-unit:
+          requires:
+            - build
+      - back-test-e2e:
+          requires:
+            - build
+      - lint:
+          requires:
+            - build
+      - docker-build-and-push:
+          requires:
+            - build
+            - lint
+            - back-test-e2e
+            - back-test-unit
+          filters:
+            branches:
+              only: main
+      - back-deploy-heroku:
+          requires:
+            - build
+            - lint
+            - back-test-e2e
+            - back-test-unit
+          filters:
+            branches:
+              only: main
+      - server-doc-build:
+          requires:
+            - build
+            - lint
+            - back-test-e2e
+            - back-test-unit
+          filters:
+            branches:
+              only: main
