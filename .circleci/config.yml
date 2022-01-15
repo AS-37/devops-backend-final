@@ -49,9 +49,9 @@ jobs:
           command: yarn test
           environment:
             DATABASE_URL: postgres://psqluer:psqlpassword@localhost:5432/psqluer
-   end_to_end:
-    docker:
-      - image: cimg/node:14.15.0
+  end_to_end:
+   docker:
+     - image: cimg/node:14.15.0
         auth:
           username: xaela37
           password: $DOCKERHUB_PASSWORD
@@ -63,10 +63,10 @@ jobs:
           POSTGRES_USER: pguser
           POSTGRES_DB: pgdb
           POSTGRES_PASSWORD: pass
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
+   steps:
+     - checkout
+     - restore_cache:
+         keys:
             - npm-v1-dependencies-{{ checksum "yarn.lock" }}
       - run:
           name: "yarn test"
