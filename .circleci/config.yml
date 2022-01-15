@@ -1,6 +1,6 @@
 --- 
 jobs: 
-  build: 
+  build: &shared-config
     docker: 
       - auth: 
           password: $DOCKERHUB_PASSWORD
@@ -20,13 +20,7 @@ jobs:
           key: dependencies-{{ checksum "package.json" }}-v1
           
   test_unit:
-    docker: 
-      - auth:
-          password: $DOCKERHUB_PASSWORD
-          username: xaela37
-        image: circleci/node:lts-fermium
-        working_directory: ~/repo
-        DATABASE_URL: postgres://pguser:pass@localhost:5432/pgdb
+    <<: *shared-config
     steps:
       - checkout
       - restore_cache:
