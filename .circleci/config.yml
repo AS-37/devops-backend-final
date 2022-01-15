@@ -69,10 +69,7 @@ jobs:
  
   heroku_deploy: 
     docker: 
-      - auth: 
-          password: $DOCKERHUB_PASSWORD
-          username: xaela37
-          image: buildpack-deps:trusty
+      - image: buildpack-deps:trusty
     steps:
       - checkout
       - run:
