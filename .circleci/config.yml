@@ -28,29 +28,22 @@ jobs:
           command: yarn test
           
   end_to_end: 
-    docker: 
-      - auth: 
-          password: $DOCKERHUB_PASSWORD
-          username: xaela37
-        image: circleci/node:lts-fermium
-      - auth: 
-          password: $DOCKERHUB_PASSWORD
-          username: xaela37
-        environment: 
-          POSTGRES_DB: pgdb
-          POSTGRES_PASSWORD: pass
-          POSTGRES_USER: pguser
-        image: "circleci/postgres:9.6.2-alpine"
-    steps: 
+    docker:
+      - image: circleci/node:lts-fermium
+      - image: circleci/postgres:9.6.5
+        environment:
+          POSTGRES_DB: psqluer
+          POSTGRES_USER: psqluer
+          POSTGRES_PASSWORD: psqlpassword
+    working_directory: ~/repo
+    steps:
       - checkout
-      - restore_cache: 
-          keys: 
-            - "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
-      - run: 
-          command: "yarn test:e2e"
-          environment: 
-            DATABASE_URL: "postgres://pguser:pass@localhost:5432/pgdb"
-          name: "yarn test"
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run:
+          command: yarn test:e2e
+          environment:
+            DATABASE_URL: postgres://psqluer:psqlpassword@localhost:5432/psqluer
   lint: 
     docker: 
       - auth: 
