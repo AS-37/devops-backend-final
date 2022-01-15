@@ -64,15 +64,15 @@ jobs:
           POSTGRES_DB: pgdb
           POSTGRES_PASSWORD: pass
     steps:
-     - checkout
-     - restore_cache:
-         keys:
-            - npm-v1-dependencies-{{ checksum "yarn.lock" }}
-      - run:
-          name: "yarn test"
-          command: yarn test:e2e
-          environment:
-            DATABASE_URL: postgres://pguser:pass@localhost:5432/pgdb
+      - checkout
+      - restore_cache:
+          keys:
+             - npm-v1-dependencies-{{ checksum "yarn.lock" }}
+       - run:
+           name: "yarn test"
+           command: yarn test:e2e
+           environment:
+             DATABASE_URL: postgres://pguser:pass@localhost:5432/pgdb
   lint:
     docker:
       - image: cimg/node:14.15.0 # the primary container, where your job's commands are run
