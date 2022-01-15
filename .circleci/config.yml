@@ -63,7 +63,7 @@ jobs:
           POSTGRES_USER: pguser
           POSTGRES_DB: pgdb
           POSTGRES_PASSWORD: pass
-   steps:
+    steps:
      - checkout
      - restore_cache:
          keys:
