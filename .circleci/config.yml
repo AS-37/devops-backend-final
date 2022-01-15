@@ -41,7 +41,7 @@ jobs:
       - run:
           command: yarn test:e2e
           environment:
-            DATABASE_URL: $DATABASE_URL
+            DATABASE_URL: postgres://$PG_USER:$PG_PASS@localhost:5432/$PG_DB
   lint:
     <<: *shared-config
     steps:
