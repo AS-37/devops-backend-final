@@ -21,10 +21,11 @@ jobs:
           
   test_unit:
     docker: 
-      - auth: 
+      - auth:
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: circleci/node:lts-fermium
+        working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
