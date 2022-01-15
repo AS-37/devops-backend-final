@@ -26,6 +26,7 @@ jobs:
           username: xaela37
         image: circleci/node:lts-fermium
         working_directory: ~/repo
+        DATABASE_URL: postgres://pguser:pass@localhost:5432/pgdb
     steps:
       - checkout
       - restore_cache:
