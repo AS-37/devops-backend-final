@@ -96,7 +96,7 @@ workflows:
   my_workflow: 
     jobs: 
       - build
-      - test_unit: 
+      - test_unit
       - end_to_end: 
           requires: 
             - build
