@@ -6,13 +6,18 @@ jobs:
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: "cimg/node:14.15.0"
-    steps: 
+    working_directory: ~/repo
+    steps:
       - checkout
-      - run: "yarn install"
-      - save_cache: 
-          key: "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
-          paths: 
+      - restore_cache:
+          keys:
+            - dependencies-{{ checksum "package.json" }}-v1
+            - dependencies-
+      - run: yarn install
+      - save_cache:
+          paths:
             - node_modules
+          key: dependencies-{{ checksum "package.json" }}-v1
   test_unit:
     docker: 
       - auth: 
