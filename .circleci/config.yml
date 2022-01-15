@@ -1,29 +1,24 @@
 jobs: 
   build: 
     docker: 
-      - 
-        auth: 
+      - auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: "cimg/node:14.15.0"
     steps: 
       - checkout
-      - 
-        run: "yarn install"
-      - 
-        save_cache: 
+      - run: "yarn install"
+      - save_cache: 
           key: "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
           paths: 
             - node_modules
   end_to_end: 
     docker: 
-      - 
-        auth: 
+      - auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: "cimg/node:14.15.0"
-      - 
-        auth: 
+      - auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         environment: 
@@ -33,38 +28,32 @@ jobs:
         image: "circleci/postgres:9.6.2-alpine"
     steps: 
       - checkout
-      - 
-        restore_cache: 
+      - restore_cache: 
           keys: 
             - "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
-      - 
-        run: 
+      - run: 
           command: "yarn test:e2e"
           environment: 
             DATABASE_URL: "postgres://pguser:pass@localhost:5432/pgdb"
           name: "yarn test"
   lint: 
     docker: 
-      - 
-        auth: 
+      - auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: "cimg/node:14.15.0"
     steps: 
       - checkout
-      - 
-        restore_cache: 
+      - restore_cache: 
           key: "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
-      - 
-        run: 
+      - run: 
           command: |-
               yarn lint
               yarn format:check
           name: "step lint"
   test_unit: 
     docker: 
-      - 
-        auth: 
+      - auth: 
           password: $DOCKERHUB_PASSWORD
           username: xaela37
         image: "cimg/node:14.15.0"
