@@ -53,6 +53,11 @@ jobs:
               yarn format:check
           name: "step lint"
   test_unit:
+    docker: 
+      - auth: 
+          password: $DOCKERHUB_PASSWORD
+          username: xaela37
+        image: "cimg/node:14.15.0"
     steps:
       - checkout
       - restore_cache:
