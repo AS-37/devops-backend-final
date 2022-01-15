@@ -42,17 +42,14 @@ jobs:
           command: yarn test:e2e
           environment:
             DATABASE_URL: postgres://$PG_USER:$PG_PASS@localhost:5432/$PG_DB
-  lint: 
+  lint:
     <<: *shared-config
-    steps: 
+    steps:
       - checkout
-      - restore_cache: 
-          key: "npm-v1-dependencies-{{ checksum \"yarn.lock\" }}"
-      - run: 
-          command: |-
-              yarn lint
-              yarn format:check
-          name: "step lint"
+      - restore_cache:
+          key: dependencies-{{ checksum "package.json" }}-v1
+      - run: yarn lint
+      - run: yarn format:check
   
   heroku_deploy: 
     docker: 
